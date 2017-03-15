@@ -5,9 +5,11 @@ Author  Vic Lin
 at 2017/3/5
 
 '''
+
 import math
 from tkinter import *
 import random
+import configparser
 
 # 一個座標
 class Point(object):
@@ -79,16 +81,25 @@ class Member(object):
 
 # 一組桁架
 class Truss(object):
-    infile = "0551283IN.txt"
-    outfile = "0551283OUT.txt"
-
+    infile = ""
+    outfile = ""
+    conf = ""
     # 所有節點
     nodes = []
     # 所有桿件
     members = []
-    def __init__(self, infile= "0551283IN.txt", outfile= "0551283OUT.txt"):
-        self.infile = infile
-        self.outfile = outfile
+    def __init__(self, conf = "config.ini"):
+        self.conf = conf
+        self.getConfig()
+
+    def getConfig(self):
+        try:
+            config=configparser.ConfigParser()
+            config.read(self.conf)
+            self.infile = config['setting']['filein']
+            self.outfile = config['setting']['fileout']
+        except:
+            print("Config error")
 
     # 加入一個節點
     def addnode(self, node):
@@ -158,14 +169,17 @@ class Truss(object):
                     self.members[i] = tmp    
 
 
+# 畫 桁架
 class DrawTruss(object):
-
-    def __init__(self, truss, scale = 100, nodeSize = 15):
+    # 桁架 放大倍率。節點大小
+    def __init__(self, truss, scale = 100, nodeSize = 15, linewid = 2):
         self.truss = truss
         self.cartori = Point(50,650)
         self.scale = scale
         self.nodeSize = nodeSize
+        self.linewid = linewid
 
+    # 初始化 畫布
     def initCanvas(self):
         self.root = Tk()
         self.root.geometry("1000x1000")
@@ -174,37 +188,19 @@ class DrawTruss(object):
         self.canvas['height'] = 1000
         self.canvas.pack()
 
-    # 把一個 node 丟進去
+    # 把一個 node 丟進去 畫 節點
     def drawNode(self, node):
         target = node.point
         screenPoint = self.locationTranslation(target)
         self.canvas.create_oval(screenPoint.x - self.nodeSize, screenPoint.y - self.nodeSize, screenPoint.x + self.nodeSize, screenPoint.y  + self.nodeSize, fill = "red")
         self.canvas.create_text(screenPoint.x, screenPoint.y, text = node.name)
 
+    # 把一個 member 丟進去 畫桿件
     def drawMember(self, member):
         sp = self.locationTranslation(member.startNode.point)
         ep = self.locationTranslation(member.endNode.point)
-        #m = (sp.y - ep.y) / (sp.x - ep.x)
-
-        #ne = -1.0
-        #if m > 0:
-        #   ne = 1.0
-        #xr = random.uniform(sp.x + member.length/5 * ne * -1.0, ep.x - member.length/5 * ne)
-        #yr = random.uniform(sp.y, ep.y)
-        '''
-        x y -> start
-        x -> rand
-        m 已知
-        球 y1
-        y - y1 = m(x - x1)
-        
-        y - mx + mx1 = y1
-
-        '''
-        self.canvas.create_line((sp.x, sp.y, ep.x, ep.y))
-        #self.canvas.create_text(xr, sp.y - m * sp.x + m * xr, text = member.name)
-        self.canvas.create_text(sp.x + (ep.x - sp.x)/3, sp.y + (ep.y - sp.y)/3, text = member.name)
-        #self.canvas.create_text((sp.x+ep.x)/2 + 10 * m, (sp.y+ep.y)/2 + 8 * m, text = member.name)
+        self.canvas.create_line((sp.x, sp.y, ep.x, ep.y),width = self.linewid)
+        self.canvas.create_text(sp.x + (ep.x - sp.x)/3, sp.y + (ep.y - sp.y)/3, font=("Purisa", 18), text = member.name, fill="blue")
 
 
 
@@ -212,6 +208,7 @@ class DrawTruss(object):
     def locationTranslation(self, target):
         return Point( self.cartori.x + target.x  * self.scale, self.cartori.y - target.y * self.scale)
 
+    # 畫圖
     def draw(self):
 
         for m in self.truss.members:
@@ -220,14 +217,12 @@ class DrawTruss(object):
         for n in self.truss.nodes:
             self.drawNode(n)
 
-
-
         self.root.mainloop()
 
 
 def main():
     
-    t = Truss("0551283IN.txt", "0551283OUT.txt")
+    t = Truss(conf="config.ini")
 
     t.getTrussFromFile()
     t.sortMember()
