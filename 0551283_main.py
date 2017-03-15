@@ -7,6 +7,7 @@ at 2017/3/5
 '''
 import math
 from tkinter import *
+import random
 
 # 一個座標
 class Point(object):
@@ -183,13 +184,31 @@ class DrawTruss(object):
     def drawMember(self, member):
         sp = self.locationTranslation(member.startNode.point)
         ep = self.locationTranslation(member.endNode.point)
-        m = (sp.y - ep.y) / (sp.x - ep.x)
+        #m = (sp.y - ep.y) / (sp.x - ep.x)
 
+        #ne = -1.0
+        #if m > 0:
+        #   ne = 1.0
+        #xr = random.uniform(sp.x + member.length/5 * ne * -1.0, ep.x - member.length/5 * ne)
+        #yr = random.uniform(sp.y, ep.y)
+        '''
+        x y -> start
+        x -> rand
+        m 已知
+        球 y1
+        y - y1 = m(x - x1)
+        
+        y - mx + mx1 = y1
+
+        '''
         self.canvas.create_line((sp.x, sp.y, ep.x, ep.y))
-        self.canvas.create_text((sp.x+ep.x)/2 + 10 * m, (sp.y+ep.y)/2 + 10 * m, text = member.name)
+        #self.canvas.create_text(xr, sp.y - m * sp.x + m * xr, text = member.name)
+        self.canvas.create_text(sp.x + (ep.x - sp.x)/3, sp.y + (ep.y - sp.y)/3, text = member.name)
+        #self.canvas.create_text((sp.x+ep.x)/2 + 10 * m, (sp.y+ep.y)/2 + 8 * m, text = member.name)
 
 
-    # 座標轉換  笛卡爾 轉 螢幕座標
+
+    # 座標轉換  轉 螢幕座標
     def locationTranslation(self, target):
         return Point( self.cartori.x + target.x  * self.scale, self.cartori.y - target.y * self.scale)
 
