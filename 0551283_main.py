@@ -6,7 +6,7 @@ at 2017/3/5
 
 '''
 import math
-import configparser
+from tkinter import *
 
 # 一個座標
 class Point(object):
@@ -16,6 +16,8 @@ class Point(object):
     def __init__(self, x, y):
         self.x = x
         self.y = y
+    def ps(self):
+        print("(%.2lf, %.2lf)" % (self.x, self.y))
 
 # 一個節點
 class Node(object):
@@ -35,6 +37,8 @@ class Node(object):
     # 加入一個桿件
     def addmember(self, member):
         self.connect.append(member)
+
+
 
 # 一個趕件
 class Member(object):
@@ -66,6 +70,10 @@ class Member(object):
     def addSelftoNodes(self):
         self.startNode.addmember(self)
         self.endNode.addmember(self)
+
+
+
+
 
 
 # 一組桁架
@@ -146,24 +154,71 @@ class Truss(object):
                 if  t1 < t2:
                     tmp = self.members[j]
                     self.members[j] = self.members[i]
-                    self.members[i] = tmp
+                    self.members[i] = tmp    
 
-    def getTrussFromini(self):
-        config=configparser.ConfigParser()
-        
-                
 
+class DrawTruss(object):
+
+    def __init__(self, truss, scale = 100, nodeSize = 15):
+        self.truss = truss
+        self.cartori = Point(50,650)
+        self.scale = scale
+        self.nodeSize = nodeSize
+
+    def initCanvas(self):
+        self.root = Tk()
+        self.root.geometry("1000x1000")
+        self.canvas = Canvas(self.root)
+        self.canvas['width'] = 1000
+        self.canvas['height'] = 1000
+        self.canvas.pack()
+
+    # 把一個 node 丟進去
+    def drawNode(self, node):
+        target = node.point
+        screenPoint = self.locationTranslation(target)
+        self.canvas.create_oval(screenPoint.x - self.nodeSize, screenPoint.y - self.nodeSize, screenPoint.x + self.nodeSize, screenPoint.y  + self.nodeSize, fill = "red")
+        self.canvas.create_text(screenPoint.x, screenPoint.y, text = node.name)
+
+    def drawMember(self, member):
+        sp = self.locationTranslation(member.startNode.point)
+        ep = self.locationTranslation(member.endNode.point)
+        m = (sp.y - ep.y) / (sp.x - ep.x)
+
+        self.canvas.create_line((sp.x, sp.y, ep.x, ep.y))
+        self.canvas.create_text((sp.x+ep.x)/2 + 10 * m, (sp.y+ep.y)/2 + 10 * m, text = member.name)
+
+
+    # 座標轉換  笛卡爾 轉 螢幕座標
+    def locationTranslation(self, target):
+        return Point( self.cartori.x + target.x  * self.scale, self.cartori.y - target.y * self.scale)
+
+    def draw(self):
+
+        for m in self.truss.members:
+            self.drawMember(m)
+
+        for n in self.truss.nodes:
+            self.drawNode(n)
+
+
+
+        self.root.mainloop()
 
 
 def main():
-    try:
-        t = Truss("0551283IN.txt", "0551283OUT.txt")
-        t.getTrussFromFile()
-        t.sortMember()
-        t.components()
-        t.writeMemberToFile()
-    except:
-        print("Error in main function")
+    
+    t = Truss("0551283IN.txt", "0551283OUT.txt")
+
+    t.getTrussFromFile()
+    t.sortMember()
+    t.components()
+    t.writeMemberToFile()
+    dt = DrawTruss(t, scale = 200, nodeSize = 10)
+    dt.initCanvas()
+    dt.draw()
+    
+    
 
 
 if __name__ == "__main__":
