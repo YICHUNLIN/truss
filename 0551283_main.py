@@ -65,11 +65,12 @@ class Member(object):
         self.area = 3.1415926 * abs((oR/2)*(oR/2) - (iR/2)*(iR/2))
         self.elm = elm
         self.eal = self.elm * self.area / self.length
-        #print("Member %s ,leng %.2lf ,area %.2lf" %(self.name, self.length, self.area))
 
+    # 計算長度
     def calLength(self):
         self.length = self.startNode.distance(self.endNode)
 
+    # 把自己加進 node
     def addSelftoNodes(self):
         self.startNode.addmember(self)
         self.endNode.addmember(self)
@@ -169,6 +170,7 @@ class Truss(object):
                     self.members[i] = tmp    
 
 
+# 定義形狀
 class Shape(object):
 
     def __init__(self, canvas, p1, p2, name):
@@ -180,7 +182,7 @@ class Shape(object):
     def draw(self):
         print("draw shape")
 
-
+# 定義線
 class Line(Shape):
     def __init__(self, canvas, p1, p2, name):
         super().__init__(canvas, p1, p2, name)
@@ -190,7 +192,7 @@ class Line(Shape):
         self.canvas.create_line((self.p1.x, self.p1.y, self.p2.x, self.p2.y),width = 2)
         self.canvas.create_text(self.p1.x + (self.p2.x - self.p1.x)/3, self.p1.y + (self.p2.y - self.p1.y)/3, font=("Purisa", 18), text = self.name, fill="blue")
 
-
+# 定義圓
 class Circle(Shape):
     def __init__(self, canvas, p1, p2, name):
         super().__init__(canvas, p1, p2, name)
@@ -223,11 +225,14 @@ class DrawTruss(object):
         self.canvas['height'] = 1000
         self.canvas.pack()
 
+    # 產生形狀
     def createShapes(self):
+        # 從 桿件產生
         for m in self.truss.members:
             sp = self.locationTranslation(m.startNode.point)
             ep = self.locationTranslation(m.endNode.point)
             self.shapes.append(Line(self.canvas, sp, ep, m.name))
+        # 從 節點產生
         for n in self.truss.nodes:
             target = n.point
             screenPoint = self.locationTranslation(target)
@@ -248,7 +253,6 @@ class DrawTruss(object):
 def main():
     
     t = Truss(conf="config.ini")
-
     t.getTrussFromFile()
     t.sortMember()
     t.components()
