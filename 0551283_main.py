@@ -169,8 +169,43 @@ class Truss(object):
                     self.members[i] = tmp    
 
 
+class Shape(object):
+
+    def __init__(self, canvas, p1, p2, name):
+        self.p1 = p1
+        self.p2 = p2
+        self.canvas = canvas
+        self.name = name
+
+    def draw(self):
+        print("draw shape")
+
+
+class Line(Shape):
+    def __init__(self, canvas, p1, p2, name):
+        super().__init__(canvas, p1, p2, name)
+
+    def draw(self):
+        print("draw line")
+        self.canvas.create_line((self.p1.x, self.p1.y, self.p2.x, self.p2.y),width = 2)
+        self.canvas.create_text(self.p1.x + (self.p2.x - self.p1.x)/3, self.p1.y + (self.p2.y - self.p1.y)/3, font=("Purisa", 18), text = self.name, fill="blue")
+
+
+class Circle(Shape):
+    def __init__(self, canvas, p1, p2, name):
+        super().__init__(canvas, p1, p2, name)
+
+    def draw(self):
+        print("draw circle")
+        self.canvas.create_oval(self.p1.x - 15, self.p1.y - 15, self.p2.x + 15, self.p2.y  + 15, fill = "red")
+        self.canvas.create_text(self.p1.x, self.p1.y, text = self.name)
+
+
+
 # 畫 桁架
 class DrawTruss(object):
+
+    shapes = []
     # 桁架 放大倍率。節點大小
     def __init__(self, truss, scale = 100, nodeSize = 15, linewid = 2):
         self.truss = truss
@@ -188,20 +223,15 @@ class DrawTruss(object):
         self.canvas['height'] = 1000
         self.canvas.pack()
 
-    # 把一個 node 丟進去 畫 節點
-    def drawNode(self, node):
-        target = node.point
-        screenPoint = self.locationTranslation(target)
-        self.canvas.create_oval(screenPoint.x - self.nodeSize, screenPoint.y - self.nodeSize, screenPoint.x + self.nodeSize, screenPoint.y  + self.nodeSize, fill = "red")
-        self.canvas.create_text(screenPoint.x, screenPoint.y, text = node.name)
-
-    # 把一個 member 丟進去 畫桿件
-    def drawMember(self, member):
-        sp = self.locationTranslation(member.startNode.point)
-        ep = self.locationTranslation(member.endNode.point)
-        self.canvas.create_line((sp.x, sp.y, ep.x, ep.y),width = self.linewid)
-        self.canvas.create_text(sp.x + (ep.x - sp.x)/3, sp.y + (ep.y - sp.y)/3, font=("Purisa", 18), text = member.name, fill="blue")
-
+    def createShapes(self):
+        for m in self.truss.members:
+            sp = self.locationTranslation(m.startNode.point)
+            ep = self.locationTranslation(m.endNode.point)
+            self.shapes.append(Line(self.canvas, sp, ep, m.name))
+        for n in self.truss.nodes:
+            target = n.point
+            screenPoint = self.locationTranslation(target)
+            self.shapes.append(Circle(self.canvas, screenPoint, screenPoint, n.name))
 
 
     # 座標轉換  轉 螢幕座標
@@ -209,16 +239,11 @@ class DrawTruss(object):
         return Point( self.cartori.x + target.x  * self.scale, self.cartori.y - target.y * self.scale)
 
     # 畫圖
-    def draw(self):
-
-        for m in self.truss.members:
-            self.drawMember(m)
-
-        for n in self.truss.nodes:
-            self.drawNode(n)
-
+    def drawShapes(self):
+        self.createShapes()
+        for shape in self.shapes:
+            shape.draw()
         self.root.mainloop()
-
 
 def main():
     
@@ -230,7 +255,7 @@ def main():
     t.writeMemberToFile()
     dt = DrawTruss(t, scale = 200, nodeSize = 10)
     dt.initCanvas()
-    dt.draw()
+    dt.drawShapes()
     
     
 
