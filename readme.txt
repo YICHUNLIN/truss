@@ -23,8 +23,10 @@ m7,n1,n2,0.18,0.2
 3. 一定要先有節點資料才能有桿件資料
 
 
-4. 節點桿件資料的 檔案名稱(*.txt) 放在 config.ini 裡 (暫時這樣寫)
+4. 節點桿件資料的 檔案名稱(*.txt) 以及 檔案名稱(*.ini)放在 config.ini 裡 
 
+6. 執行順序
+	取得 config.ini -> 取得 nodes 與 members (學號IN.ini or 學號IN.txt) -> 計算 -> 存檔 (學號OUT.txt or 學號OUT.txt)
 
 
 執行方法

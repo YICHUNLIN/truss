@@ -22,6 +22,8 @@ class Point(object):
     def ps(self):
         print("(%.2lf, %.2lf)" % (self.x, self.y))
 
+#-----------------------------------------------------------------------------
+
 # 一個節點
 class Node(object):
     # 結點名稱
@@ -42,6 +44,7 @@ class Node(object):
         self.connect.append(member)
 
 
+#-----------------------------------------------------------------------------
 
 # 一個趕件
 class Member(object):
@@ -75,10 +78,7 @@ class Member(object):
         self.startNode.addmember(self)
         self.endNode.addmember(self)
 
-
-
-
-
+#-----------------------------------------------------------------------------
 
 # 一組桁架
 class Truss(object):
@@ -89,16 +89,26 @@ class Truss(object):
     nodes = []
     # 所有桿件
     members = []
+    # 檔案類型 ini or txt
+    filetypeIsini = True
     def __init__(self, conf = "config.ini"):
         self.conf = conf
         self.getConfig()
 
     def getConfig(self):
         try:
+            # 讀設定檔
             config=configparser.ConfigParser()
             config.read(self.conf)
-            self.infile = config['setting']['filein']
-            self.outfile = config['setting']['fileout']
+            if config['conf']['filetype'] == "ini":
+                self.infile = config['inifile']['filein']
+                self.outfile = config['inifile']['fileout']
+                self.filetypeIsini = True
+            elif config['conf']['filetype'] == "txt":
+                self.infile = config['txtfile']['filein']
+                self.outfile = config['txtfile']['fileout']
+                self.filetypeIsini = False
+
         except:
             print("Config error")
 
@@ -121,6 +131,8 @@ class Truss(object):
         for m in self.members:
             print("%s - (%s,l %.5lf, a %.5lf, E*A/L %.5lf) - %s " % (m.startNode.name ,m.name, m.length, m.area, m.eal, m.endNode.name))
 
+
+
     # 從檔案取得桁架資訊
     def getTrussFromFile(self):
         try:
@@ -138,7 +150,38 @@ class Truss(object):
                     self.addmember(Member(ns,ne,arr[0],float(arr[3]),float(arr[4])))
             f.close()
         except:
-            print("File exception")
+            print("File txt exception")
+
+    # 從 ini 讀資料
+    def getTrussFromini(self):
+        try:
+            inifile=configparser.ConfigParser()
+            inifile.read(self.infile)
+            ininodesTitles = inifile.options('nodes')
+            inimembersTitles = inifile.options('members')
+            for nn in ininodesTitles:
+                anode = inifile['nodes'][nn]
+                arr = anode.split(",")
+                self.addnode(Node(Point(float(arr[0]),float(arr[1])),nn))
+                #print(anode)
+
+            for mm in inimembersTitles:
+                amember = inifile['members'][mm]
+                arr = amember.split(',')
+                ns = self.getNodeByName(arr[0])
+                ne = self.getNodeByName(arr[1])
+                self.addmember(Member(ns,ne,mm,float(arr[2]),float(arr[3])))
+            print(self.nodes)
+            print(self.members)
+        except:
+            print("File ini exception")
+
+    # 讀資料切換
+    def getTruss(self):
+        if self.filetypeIsini:
+            self.getTrussFromini()
+        else:
+            self.getTrussFromFile()
 
     # 將趕件寫入檔案
     def writeMemberToFile(self):
@@ -150,6 +193,21 @@ class Truss(object):
         except:
             print("File exception")
 
+    def writeMembertoini(self):
+        f = open(self.outfile, "w")
+        cf = configparser.ConfigParser()
+        cf.add_section('MemberResult')
+        for m in self.members:
+            cf.set('MemberResult',m.name,"L %.5lf,A %.5lf,E*A/L %.5lf" % (m.length, m.area, m.eal ))
+        cf.write(f)
+        f.close()
+
+    # 寫資料切換
+    def setMemberToFile(self):
+        if self.filetypeIsini:
+            self.writeMembertoini()
+        else:
+            self.writeMemberToFile()
     # 根據名字取得節點
     def getNodeByName(self, name):
         for n in self.nodes:
@@ -170,17 +228,28 @@ class Truss(object):
                     self.members[i] = tmp    
 
 
+#-----------------------------------------------------------------------------
+
 # 定義形狀
 class Shape(object):
-
     def __init__(self, canvas, p1, p2, name):
         self.p1 = p1
         self.p2 = p2
+        #canvas.bind("<Button-1>", self.drop)
+        #canvas.bind('<Motion>', self.motion)
         self.canvas = canvas
         self.name = name
+        self.shapeLabel = None
+        self.shapeShape = None
+        self.isSelect = False
+        
+    def motion(self, event):
+        print("motion")
 
-    def draw(self):
-        print("draw shape")
+    def touch(self, event):
+        print("touch %s" % self.name)
+
+#-----------------------------------------------------------------------------
 
 # 定義線
 class Line(Shape):
@@ -189,8 +258,12 @@ class Line(Shape):
 
     def draw(self):
         print("draw line")
-        self.canvas.create_line((self.p1.x, self.p1.y, self.p2.x, self.p2.y),width = 2)
-        self.canvas.create_text(self.p1.x + (self.p2.x - self.p1.x)/3, self.p1.y + (self.p2.y - self.p1.y)/3, font=("Purisa", 18), text = self.name, fill="blue")
+        self.shapeShape = self.canvas.create_line((self.p1.x, self.p1.y, self.p2.x, self.p2.y),width = 2)
+        self.shapeLabel = self.canvas.create_text(self.p1.x + (self.p2.x - self.p1.x)/3, self.p1.y + (self.p2.y - self.p1.y)/3, font=("Purisa", 18), text = self.name, fill="blue")
+
+    def touch(self, event):
+        self.isSelect = False
+#-----------------------------------------------------------------------------
 
 # 定義圓
 class Circle(Shape):
@@ -199,17 +272,38 @@ class Circle(Shape):
 
     def draw(self):
         print("draw circle")
-        self.canvas.create_oval(self.p1.x - 15, self.p1.y - 15, self.p2.x + 15, self.p2.y  + 15, fill = "red")
-        self.canvas.create_text(self.p1.x, self.p1.y, text = self.name)
+        self.shapeShape = self.canvas.create_oval(self.p1.x - 15, self.p1.y - 15, self.p2.x + 15, self.p2.y  + 15, fill = "red")
+        self.shapeLabel = self.canvas.create_text(self.p1.x, self.p1.y, text = self.name)
+
+    def touch(self, event):
+        super().drop(event)
+        if((self.p1.x - 10 < event.x) and (self.p1.y - 10 < event.y)) and ((self.p2.x + 10 > event.x) and (self.p2.y + 10 > event.y)):
+            self.isSelect = True
+        else:
+            self.isSelect = False
+
+        
+    def motion(self, event):
+        super().motion(event)
+
+        if self.isSelect:
+            mpoint = Point(event.x, event.y)
+            self.p1 = self.p2 = mpoint
+            self.canvas.delete(self.shapeShape)
+            self.canvas.delete(self.shapeLabel)
+            self.draw()
 
 
+
+
+#-----------------------------------------------------------------------------
 
 # 畫 桁架
 class DrawTruss(object):
 
     shapes = []
     # 桁架 放大倍率。節點大小
-    def __init__(self, truss, scale = 100, nodeSize = 15, linewid = 2):
+    def __init__(self, truss, scale = 100, nodeSize = 10, linewid = 2):
         self.truss = truss
         self.cartori = Point(50,650)
         self.scale = scale
@@ -224,6 +318,9 @@ class DrawTruss(object):
         self.canvas['width'] = 1000
         self.canvas['height'] = 1000
         self.canvas.pack()
+        self.canvas.bind("<Button-1>", self.drop)
+        self.canvas.bind('<Motion>', self.motion)
+        self.isDrop = False
 
     # 產生形狀
     def createShapes(self):
@@ -238,7 +335,6 @@ class DrawTruss(object):
             screenPoint = self.locationTranslation(target)
             self.shapes.append(Circle(self.canvas, screenPoint, screenPoint, n.name))
 
-
     # 座標轉換  轉 螢幕座標
     def locationTranslation(self, target):
         return Point( self.cartori.x + target.x  * self.scale, self.cartori.y - target.y * self.scale)
@@ -250,19 +346,42 @@ class DrawTruss(object):
             shape.draw()
         self.root.mainloop()
 
+    def drop(self, event):
+        #print("drop shape")
+        if self.isDrop:
+            self.isDrop = False
+        else:
+            self.isDrop = True
+        for s in self.shapes:
+            s.touch(event)
+            break
+
+    def motion(self, event):
+        if self.isDrop:
+            for s in self.shapes:
+                s.motion(event)
+                break
+
+
+
+#-----------------------------------------------------------------------------
 def main():
     
     t = Truss(conf="config.ini")
-    t.getTrussFromFile()
+    #t.getTrussFromFile()
+    t.getTruss()
+    
     t.sortMember()
     t.components()
-    t.writeMemberToFile()
-    dt = DrawTruss(t, scale = 200, nodeSize = 10)
+    #t.writeMemberToFile()
+    t.setMemberToFile()
+    dt = DrawTruss(t, scale = 200)
     dt.initCanvas()
     dt.drawShapes()
     
     
 
+#-----------------------------------------------------------------------------
 
 if __name__ == "__main__":
     main()
