@@ -31,4 +31,4 @@ m7,n1,n2,0.18,0.2
 
 執行方法
 
-python3 0551283_main.py
+python3 main.py
