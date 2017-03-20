@@ -8,6 +8,7 @@ from .node import Node
 from .point import Point
 
 # 一組桁架
+
 class Truss(object):
     infile = ""
     outfile = ""
