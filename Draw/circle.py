@@ -6,22 +6,24 @@ from tkinter import *
 
 # 定義圓
 class Circle(Shape):
-    def __init__(self, canvas, p1, p2, name):
-        super().__init__(canvas, p1, p2, name)
+    def __init__(self, canvas, p1, p2, name, size = 10):
+        super().__init__(canvas, p1, p2, name, size)
 
+    # 畫圓
     def draw(self):
         print("draw circle")
-        self.shapeShape = self.canvas.create_oval(self.p1.x - 15, self.p1.y - 15, self.p2.x + 15, self.p2.y  + 15, fill = "red")
+        self.shapeShape = self.canvas.create_oval(self.p1.x - self.size, self.p1.y - self.size, self.p2.x + self.size, self.p2.y  + self.size, fill = "red")
         self.shapeLabel = self.canvas.create_text(self.p1.x, self.p1.y, text = self.name)
 
+    # 觸碰事件
     def touch(self, event):
         super().drop(event)
-        if((self.p1.x - 10 < event.x) and (self.p1.y - 10 < event.y)) and ((self.p2.x + 10 > event.x) and (self.p2.y + 10 > event.y)):
+        if((self.p1.x - self.size < event.x) and (self.p1.y - self.size < event.y)) and ((self.p2.x + self.size > event.x) and (self.p2.y + self.size > event.y)):
             self.isSelect = True
         else:
             self.isSelect = False
 
-        
+    # 滑鼠移動事件
     def motion(self, event):
         super().motion(event)
 

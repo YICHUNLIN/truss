@@ -36,12 +36,12 @@ class DrawTruss(object):
         for m in self.truss.members:
             sp = self.locationTranslation(m.startNode.point)
             ep = self.locationTranslation(m.endNode.point)
-            self.shapes.append(Line(self.canvas, sp, ep, m.name))
+            self.shapes.append(Line(self.canvas, sp, ep, m.name, size = int(m.area*1000)))
         # 從 節點產生
         for n in self.truss.nodes:
             target = n.point
             screenPoint = self.locationTranslation(target)
-            self.shapes.append(Circle(self.canvas, screenPoint, screenPoint, n.name))
+            self.shapes.append(Circle(self.canvas, screenPoint, screenPoint, n.name, size = 12))
 
     # 座標轉換  轉 螢幕座標
     def locationTranslation(self, target):
@@ -69,4 +69,8 @@ class DrawTruss(object):
             for s in self.shapes:
                 s.motion(event)
                 break
-
+    '''
+    1. 點Node
+    2. 移動滑鼠
+    3. 放開滑鼠
+    '''
