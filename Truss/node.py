@@ -22,3 +22,5 @@ class Node(object):
     # 加入一個桿件
     def addmember(self, member):
         self.connect.append(member)
+
+

@@ -87,18 +87,28 @@ class Truss(object):
             inifile.read(self.infile)
             ininodesTitles = inifile.options('nodes')
             inimembersTitles = inifile.options('members')
+            inifixpointTitles = inifile.options('FixPoint')
+
+            # get nodes
             for nn in ininodesTitles:
                 anode = inifile['nodes'][nn]
                 arr = anode.split(",")
                 self.addnode(Node(Point(float(arr[0]),float(arr[1])),nn))
                 #print(anode)
-
+            # get members
             for mm in inimembersTitles:
                 amember = inifile['members'][mm]
                 arr = amember.split(',')
                 ns = self.getNodeByName(arr[0])
                 ne = self.getNodeByName(arr[1])
                 self.addmember(Member(ns,ne,mm,float(arr[2]),float(arr[3])))
+
+            # get fix points
+            '''
+            for fp in inifixpointTitles:
+                afp = inifile["FixPoint"][fp]
+                arr = afp.split(',')
+            '''
             print(self.nodes)
             print(self.members)
         except:

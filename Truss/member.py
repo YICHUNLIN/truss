@@ -14,7 +14,7 @@ class Member(object):
     elm = 0.0
     # E*A/L
     eal = 0.0
-    # 始 -> 末, 名字 ,內徑, 外徑
+    # 始 -> 末, 名字 ,內徑, 外徑, e
     def __init__(self, startnode, endnode, name, iR, oR, elm = 2.04*1000000):
 
         self.startNode = startnode

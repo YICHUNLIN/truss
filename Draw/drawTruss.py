@@ -6,6 +6,8 @@ from .line import Line
 from .circle import Circle
 from Truss.truss import Truss
 from tkinter import *
+from .rectangle import Rectangle
+from .triangle import Triangle
 # 畫 桁架
 class DrawTruss(object):
 
@@ -30,6 +32,7 @@ class DrawTruss(object):
         self.canvas.bind('<Motion>', self.motion)
         self.isDrop = False
 
+
     # 產生形狀
     def createShapes(self):
         # 從 桿件產生
@@ -42,6 +45,9 @@ class DrawTruss(object):
             target = n.point
             screenPoint = self.locationTranslation(target)
             self.shapes.append(Circle(self.canvas, screenPoint, screenPoint, n.name, size = 12))
+        # test
+        self.shapes.append(Rectangle(self.canvas,Point(100,100),Point(140,120),""))
+        self.shapes.append(Triangle(self.canvas,Point(200,200),Point(200,230),"",size = 25))
 
     # 座標轉換  轉 螢幕座標
     def locationTranslation(self, target):
