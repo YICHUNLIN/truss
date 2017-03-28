@@ -13,7 +13,7 @@ class DrawTruss(object):
 
     shapes = []
     # 桁架 放大倍率。節點大小
-    def __init__(self, truss, scale = 100, nodeSize = 10, linewid = 2):
+    def __init__(self,truss, scale = 100, nodeSize = 10, linewid = 2):
         self.truss = truss
         self.cartori = Point(50,650)
         self.scale = scale
@@ -21,9 +21,9 @@ class DrawTruss(object):
         self.linewid = linewid
 
     # 初始化 畫布
-    def initCanvas(self):
-        self.root = Tk()
-        self.root.geometry("1000x1000")
+    def initCanvas(self,root):
+        self.root = root
+        #self.root.geometry("1000x1000")
         self.canvas = Canvas(self.root)
         self.canvas['width'] = 1000
         self.canvas['height'] = 1000
@@ -31,6 +31,7 @@ class DrawTruss(object):
         self.canvas.bind("<Button-1>", self.drop)
         self.canvas.bind('<Motion>', self.motion)
         self.isDrop = False
+
 
 
     # 產生形狀
@@ -46,8 +47,8 @@ class DrawTruss(object):
             screenPoint = self.locationTranslation(target)
             self.shapes.append(Circle(self.canvas, screenPoint, screenPoint, n.name, size = 12))
         # test
-        self.shapes.append(Rectangle(self.canvas,Point(100,100),Point(140,120),""))
-        self.shapes.append(Triangle(self.canvas,Point(200,200),Point(200,230),"",size = 25))
+        #self.shapes.append(Rectangle(self.canvas,Point(100,100),Point(140,120),""))
+        #self.shapes.append(Triangle(self.canvas,Point(200,200),Point(200,230),"",size = 25))
 
     # 座標轉換  轉 螢幕座標
     def locationTranslation(self, target):
@@ -58,7 +59,7 @@ class DrawTruss(object):
         self.createShapes()
         for shape in self.shapes:
             shape.draw()
-        self.root.mainloop()
+        #self.root.mainloop()
 
     def drop(self, event):
         #print("drop shape")
