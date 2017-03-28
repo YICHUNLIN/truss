@@ -19,16 +19,26 @@ class MainClass:
     def getGUI(self):
         self.root = Tk()
         self.root.geometry("1000x1000")
-        self.btn = Button(self.root, text ="Hello", command = self.e_helloCallBack)
-        self.btn.pack()
+        self.btn = Button(self.root, text ="draw", command = self.e_helloCallBack)
+        self.btn.grid(row=0,column=0)
+        self.clearbtn = Button(self.root, text="clear", command = self.e_clear)
+        self.clearbtn.grid(row=0, column = 1)
+        #self.btn.pack()
+
+        self.canvasframe = Frame(self.root)
+        self.canvasframe.grid(row=1,column=0,rowspan=10,columnspan=10)
+
         self.dt = DrawTruss(self.t, scale = 200)
-        self.dt.initCanvas(self.root)
+        self.dt.initCanvas(self.canvasframe)
         #self.dt.drawShapes()
         self.root.mainloop()
 
 
     def e_helloCallBack(self):
         self.dt.drawShapes()
+
+    def e_clear(self):
+        self.dt.clearCanvas()
 
 
 def main():

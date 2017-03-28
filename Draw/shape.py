@@ -18,7 +18,9 @@ class Shape(object):
         self.size = size
         
     def motion(self, event):
-        print("motion")
+        pass
+        #print("motion")
 
     def touch(self, event):
-        print("touch %s" % self.name)
+        pass
+        #print("touch %s" % self.name)

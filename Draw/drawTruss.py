@@ -76,6 +76,9 @@ class DrawTruss(object):
             for s in self.shapes:
                 s.motion(event)
                 break
+                
+    def clearCanvas(self):
+        self.canvas.delete("all")
     '''
     1. 點Node
     2. 移動滑鼠
